@@ -98,21 +98,12 @@ int main(int argc, char *argv[]) {
                 // was adding the point enough to complete the calibration?
                 if (r.IsCalibrated()) {
                     progress = CalibProgress::Finished;
-
                     // set the calibration data
                     r.SetTaskFrameToRobotFrameParam();
                 }
             }
-        }
-
+}
             if (progress == CalibProgress::Finished) {
-                // computing camera_to_robot_transform using chain rule (rTk=rTb*bTk with r=robot, b=board, k=camera)
-
-                auto camera_frame_to_robot_frame = r.task_frame_to_robot_frame * r.task_frame_to_cam_frame.Inverse();
-                cv::Vec3d rvec, tvec;
-                conversions::KDLFrameToRvectvec(camera_frame_to_robot_frame, rvec, tvec);
-                ROS_INFO_STREAM("  -> chain rule for camera to PSM base transformation: \n" << rvec << std::endl << tvec
-                                                                                            << std::endl);
 
                 instructions = "Calibration finished. Press 'Esc' to exit";
             }
@@ -145,8 +136,10 @@ int main(int argc, char *argv[]) {
 
             ros::spinOnce();
             loop_rate.sleep();
-        }
+        
 
+
+    }
     ROS_INFO("Ending Session...\n");
     ros::shutdown();
 

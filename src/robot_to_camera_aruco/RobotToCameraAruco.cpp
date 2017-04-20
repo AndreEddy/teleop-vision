@@ -31,14 +31,10 @@ RobotToCameraAruco::RobotToCameraAruco(std::string node_name)
     // declaration of target markers for calib2
     for (uint i=0; i<num_calib_points; i++){
         if(i<num_calib_points/2)
-            target.push_back(cv::Point3d((1+i)*(aruco_marker_length_in_meters+aruco_marker_separation_in_meters), aruco_marker_length_in_meters, 0.0));
+            target.push_back(cv::Point3d((i)*(aruco_marker_length_in_meters+aruco_marker_separation_in_meters), aruco_marker_length_in_meters, 0.0));
         else
-            target.push_back(cv::Point3d((1+i)*(aruco_marker_length_in_meters+aruco_marker_separation_in_meters), 2*aruco_marker_length_in_meters+aruco_marker_separation_in_meters, 0.0));
+            target.push_back(cv::Point3d((i-num_calib_points/2)*(aruco_marker_length_in_meters+aruco_marker_separation_in_meters), 2*aruco_marker_length_in_meters+aruco_marker_separation_in_meters, 0.0));
     }
-
-    cv::projectPoints(target, task_frame_to_cam_rvec,
-                      task_frame_to_cam_tvec, camera_intrinsics.camMatrix,
-                      camera_intrinsics.distCoeffs, calib_points_screen);
 };
 
 
@@ -64,7 +60,7 @@ void RobotToCameraAruco::SetupROS() {
     else
         ROS_INFO_STREAM("Using parameter "
                             << n.resolveName("number_of_calibration_points").c_str()
-                            << "with value " << num_calib_points
+                            << " with value " << num_calib_points/2
                             << " points per axis. ");
 
     // if the task_frame_to_robot_frame parameter is present from a previous calibration we can
@@ -123,7 +119,7 @@ void RobotToCameraAruco::SetupROS() {
     // register image transport subscriber
     camera_image_subscriber = it->subscribe(
         image_transport_namespace, 1, &RobotToCameraAruco::CameraImageCallback, this);
-
+    ROS_INFO_STREAM("Actual image topic: " << camera_image_subscriber.getTopic().c_str());
 
 
     // a topic name is required for the camera pose
@@ -356,6 +352,10 @@ void RobotToCameraAruco::Calib1CalculateTransformation(
 
 void RobotToCameraAruco::Calib2DrawTarget(cv::String &instructions, cv::Mat img) {
 
+    cv::projectPoints(target, task_frame_to_cam_rvec,
+                      task_frame_to_cam_tvec, camera_intrinsics.camMatrix,
+                      camera_intrinsics.distCoeffs, calib_points_screen);
+                      
     std::ostringstream oss;
     oss << "Take the tool tip to the target point then press s";
     for (uint i=0; i<num_calib_points; i++){
@@ -414,6 +414,7 @@ void RobotToCameraAruco::SetTaskFrameToRobotFrameParam() {
 
     std::string arm_name;
     (n.getParam("robot_arm_name", arm_name));
+    //std::cout << "arm_name: \n" << arm_name <<std::endl;
 
     std::stringstream param_name;
     param_name << std::string("/calibrations/task_frame_to_") << arm_name << "_frame";
@@ -430,6 +431,12 @@ void RobotToCameraAruco::SetTaskFrameToRobotFrameParam() {
     tf::poseKDLToMsg(task_frame_to_cam_frame, temp_pose);
     std::cout << "  -> task_frame_to_cam_frame: \n" << temp_pose << std::endl;
 
+    // computing camera_to_robot_transform using chain rule (rTk=rTb*bTk with r=robot, b=board, k=camera)
+    auto camera_frame_to_robot_frame = task_frame_to_robot_frame * task_frame_to_cam_frame.Inverse();
+    cv::Vec3d rvec, tvec;
+    conversions::KDLFrameToRvectvec(camera_frame_to_robot_frame, rvec, tvec);
+    ROS_INFO_STREAM("  -> chain rule for camera to PSM base transformation: \n" << rvec << std::endl << tvec
+                                                                                << std::endl);
 }
 
 void RobotToCameraAruco::Reset() {
@@ -464,7 +471,6 @@ void RobotToCameraAruco::CameraImageCallback(
     const sensor_msgs::ImageConstPtr &msg) {
     try {
         image_msg = cv_bridge::toCvCopy(msg, "bgr8")->image;
-        ROS_DEBUG_STREAM("New image received: seq = " << msg->header.seq);
     } catch (cv_bridge::Exception &e) {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
                   msg->encoding.c_str());
