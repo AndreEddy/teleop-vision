@@ -97,7 +97,7 @@ private:
 
     // MUST BE EVEN NUMBER. The number of points recorded for calibration. default value of 5 is used
     // if no parameter is found on the ros server.
-    int num_calib_points = 6;
+    int num_calib_points = 12;
 
     // the length of the axis line in [m] shown on the image
     double visual_axis_length = 0.1;

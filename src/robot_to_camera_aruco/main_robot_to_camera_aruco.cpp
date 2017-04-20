@@ -103,6 +103,7 @@ int main(int argc, char *argv[]) {
                     r.SetTaskFrameToRobotFrameParam();
                 }
             }
+        }
 
             if (progress == CalibProgress::Finished) {
                 // computing camera_to_robot_transform using chain rule (rTk=rTb*bTk with r=robot, b=board, k=camera)
@@ -146,8 +147,6 @@ int main(int argc, char *argv[]) {
             loop_rate.sleep();
         }
 
-
-    }
     ROS_INFO("Ending Session...\n");
     ros::shutdown();
 

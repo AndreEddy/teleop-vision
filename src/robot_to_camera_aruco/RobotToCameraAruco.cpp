@@ -464,6 +464,7 @@ void RobotToCameraAruco::CameraImageCallback(
     const sensor_msgs::ImageConstPtr &msg) {
     try {
         image_msg = cv_bridge::toCvCopy(msg, "bgr8")->image;
+        ROS_DEBUG_STREAM("New image received: seq = " << msg->header.seq);
     } catch (cv_bridge::Exception &e) {
         ROS_ERROR("Could not convert from '%s' to 'bgr8'.",
                   msg->encoding.c_str());
