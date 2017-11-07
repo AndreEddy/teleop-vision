@@ -54,7 +54,6 @@
         <param name="master_2_name" value="$(arg master_2_name)"/>
 
         <!-- AR_mode:
-
          -->
         <param name= "AR_mode" value= "false" />
         <!-- show_reference_frames:

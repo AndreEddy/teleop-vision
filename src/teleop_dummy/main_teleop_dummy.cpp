@@ -138,25 +138,25 @@ int main(int argc, char * argv[]) {
     // ------------ MATERS GET STATE
     param_name.str("");
     param_name << std::string("/dvrk/") << master_names[0]
-               << "/robot_state";
+               << "/status";
     ros::Subscriber sub_master_1_state =  n.subscribe(param_name.str(),
                                                       1, Master1StateCallback);
 
     param_name.str("");
     param_name << std::string("/dvrk/") << master_names[1]
-               << "/robot_state";
+               << "/status";
     ros::Subscriber sub_master_2_state =  n.subscribe(param_name.str(),
                                                       1, Master2StateCallback);
 
     // ------------ MATERS SET STATE
     param_name.str("");
     param_name << std::string("/dvrk/") << master_names[0]
-               << "/set_robot_state";
+               << "/set_desired_state";
     ros::Publisher pub_master_1_state = n.advertise<std_msgs::String>(param_name.str(), 2, true);
 
     param_name.str("");
     param_name << std::string("/dvrk/") << master_names[1]
-               << "/set_robot_state";
+               << "/set_desired_state";
     ros::Publisher pub_master_2_state = n.advertise<std_msgs::String>(param_name.str(), 2);
 
     // ------------ SLAVE PUBLISH POSE
@@ -169,6 +169,19 @@ int main(int argc, char * argv[]) {
     param_name << std::string("/dvrk/") << slave_names[1]
                << "/position_cartesian_current";
     ros::Publisher pub_slave_2_pose = n.advertise<geometry_msgs::PoseStamped>(param_name.str(), 2);
+
+    // ------------ TELEOPERATION SET STATE
+
+    param_name.str("");
+    param_name << std::string("/dvrk/") << master_names[0] << "_PSM1"
+               << "/set_desired_state";
+    ros::Publisher pub_teleop_1_state = n.advertise<std_msgs::String>(param_name.str(), 2);
+
+    param_name.str("");
+    param_name << std::string("/dvrk/") << master_names[1] << "_PSM2"
+               << "/set_desired_state";
+    ros::Publisher pub_teleop_2_state = n.advertise<std_msgs::String>(param_name.str(), 2);
+
 
     // ------------ subscribe to control events that come from the GUI
     ros::Subscriber sub_control_events = n.subscribe("/atar/control_events", 1,
@@ -189,21 +202,21 @@ int main(int argc, char * argv[]) {
     ros::spinOnce();
 
     std_msgs::String string_msg;
-    if(master_state[0].data() != std::string("DVRK_READY")) {
-        string_msg.data = "Home";
+    if(master_state[0].data() != std::string("READY")) {
+        string_msg.data = "POWERED";
         pub_master_1_state.publish(string_msg);
         ROS_INFO( "Attempting to Home %s", master_names[0].c_str());
     } else
-        ROS_INFO( "%s is alreade Homed.", master_names[0].c_str());
+        ROS_INFO( "%s is already Homed.", master_names[0].c_str());
 
     // second master arm
     if(num_arms==2) {
-        if (master_state[1].data() != std::string("DVRK_READY")) {
-            string_msg.data = "Home";
+        if (master_state[1].data() != std::string("READY")) {
+            string_msg.data = "POWERED";
             pub_master_2_state.publish(string_msg);
             ROS_INFO( "Attempting to Home %s", master_names[1].c_str());
         } else
-            ROS_INFO( "%s is alreade Homed.", master_names[1].c_str());
+            ROS_INFO( "%s is already Homed.", master_names[1].c_str());
     }
 
     KDL::Vector master_position_at_clutch_instance[2];
@@ -226,20 +239,27 @@ int main(int argc, char * argv[]) {
         if(home_masters){
             home_masters = false;
             std_msgs::String string_msg;
-            string_msg.data = "Home";
+	    
+            if(master_state[0].data() == std::string("UNINITIALIZED")){
+		string_msg.data = "POWERED";
+                pub_master_1_state.publish(string_msg);
+		if(num_arms==2)
+                    pub_master_2_state.publish(string_msg);
+	    }
+            string_msg.data = "READY";
 
-            if(master_state[0].data() != std::string("DVRK_READY")) {
+            if(master_state[0].data() != std::string("READY")) {
                 pub_master_1_state.publish(string_msg);
                 ROS_INFO( "Attempting to Home %s", master_names[0].c_str());
             } else
-                ROS_INFO( "%s is alreade Homed.", master_names[0].c_str());
+                ROS_INFO( "%s is already Homed.", master_names[0].c_str());
             // second master arm
             if(num_arms==2) {
-                if (master_state[1].data() != std::string("DVRK_READY")) {
+                if (master_state[1].data() != std::string("READY")) {
                     pub_master_2_state.publish(string_msg);
                     ROS_INFO( "Attempting to Home %s", master_names[1].c_str());
                 } else
-                    ROS_INFO( "%s is alreade Homed.", master_names[1].c_str());
+                    ROS_INFO( "%s is already Homed.", master_names[1].c_str());
             }
         }
 
@@ -247,33 +267,26 @@ int main(int argc, char * argv[]) {
             new_coag_msg = false;
 
             if(coag_pressed && !clutch_pressed){
-                string_msg.data = "DVRK_EFFORT_CARTESIAN";
-                pub_master_1_state.publish(string_msg);
+                string_msg.data = "ENABLED";
+                pub_teleop_1_state.publish(string_msg);
                 master_position_at_clutch_instance[0] = master_pose[0].p;
                 slave_position_at_clutch_instance[0] = slave_pose[0].p;
                 if(num_arms==2){
-                    pub_master_2_state.publish(string_msg);
+                    pub_teleop_2_state.publish(string_msg);
                     master_position_at_clutch_instance[1] = master_pose[1].p;
                     slave_position_at_clutch_instance[1] = slave_pose[1].p;
                 }
             }
 
             if(!coag_pressed){
-                string_msg.data = "DVRK_POSITION_CARTESIAN";
-                pub_master_1_state.publish(string_msg);
+                string_msg.data = "ALIGNING_MTM";
+                pub_teleop_1_state.publish(string_msg);
                 if(num_arms==2)
-                    pub_master_2_state.publish(string_msg);
+                    pub_teleop_2_state.publish(string_msg);
             }
         }
         if(new_clutch_msg){
             new_clutch_msg = false;
-
-            if(coag_pressed&& clutch_pressed){
-                string_msg.data = "DVRK_CLUTCH";
-                pub_master_1_state.publish(string_msg);
-                if(num_arms==2)
-                    pub_master_2_state.publish(string_msg);
-            }
         }
 
         // incremental slave position

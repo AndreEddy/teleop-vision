@@ -111,7 +111,7 @@ void ARCore::SetupROSandGetParameters() {
             this);
 
     //--------
-    // Left image subscriber.
+    // Right image subscriber.
     std::string right_image_topic_name = "/camera/right/image_color";
     if (n.getParam("right_image_topic_name", right_image_topic_name))
         ROS_DEBUG(
@@ -167,7 +167,7 @@ void ARCore::SetupROSandGetParameters() {
     std::stringstream topic_name;
     topic_name << std::string("/") << left_cam_name
                << "/world_to_camera_transform";
-    ROS_DEBUG("[SUBSCRIBERS] Left came pose from '%s'",
+    ROS_DEBUG("[SUBSCRIBERS] Left cam pose from '%s'",
               topic_name.str().c_str());
     sub_cam_pose_left = n.subscribe(
             topic_name.str(), 1, &ARCore::LeftCamPoseCallback, this);
@@ -211,7 +211,7 @@ void ARCore::SetupROSandGetParameters() {
         // the current pose of the tools (slaves)
         param_name.str("");
         param_name << std::string("/dvrk/") <<slave_names[n_arm]
-                   << "/position_cartesian_current";
+                   << "/position_cartesian_desired";
         subtool_current_pose[n_arm] =
                 n.subscribe(param_name.str(), 1,
                             pose_current_tool_callbacks[n_arm], this);
@@ -219,7 +219,7 @@ void ARCore::SetupROSandGetParameters() {
         // the current pose of the tools (slaves)
         param_name.str("");
         param_name << std::string("/dvrk/") <<master_names[n_arm]
-                   << "/gripper_position_current";
+                   << "/state_gripper_current"; 
         subtool_current_gripper[n_arm] =
                 n.subscribe(param_name.str(), 1, gripper_callbacks[n_arm], this);
 
@@ -259,7 +259,7 @@ void ARCore::SetupROSandGetParameters() {
                 slave_frame_to_world_frame[n_arm] = mtm_to_image *
                                                     pose_cam[0];
                 //make sure translation is null
-                slave_frame_to_world_frame[n_arm].p = KDL::Vector(0.0, 0.0,0.0);
+                slave_frame_to_world_frame[n_arm].p = KDL::Vector(0.0, 0.0, 0.0);
 
             } else {
                 ROS_ERROR("Parameter %s was not found. This is needed in VR "
@@ -463,7 +463,7 @@ void ARCore::StartTask(const uint task_id) {
         }
 
         // starting the task
-        ROS_DEBUG("Starting new BuzzWireTask task. ");
+        ROS_DEBUG("Starting new SteadyHandTask task. ");
         task_ptr   = new TaskSteadyHand(
                 mesh_files_dir, show_reference_frames, (bool) (n_arms - 1),
                 with_guidance, haptic_loop_rate, slave_names, slave_frame_to_world_frame
@@ -873,13 +873,13 @@ void ARCore::Tool2PoseCurrentCallback(
 // -----------------------------------------------------------------------------
 // Reading the gripper positions
 void ARCore::Tool1GripperCurrentCallback(
-        const std_msgs::Float32::ConstPtr &msg) {
-    gripper_current[0] =  msg->data;
+        const sensor_msgs::JointStateConstPtr &msg) {
+    gripper_current[0] =  msg->position[0];
 }
 
 void ARCore::Tool2GripperCurrentCallback(
-        const std_msgs::Float32::ConstPtr &msg) {
-    gripper_current[1] =  msg->data;
+        const sensor_msgs::JointStateConstPtr &msg) {
+    gripper_current[1] =  msg->position[0];
 
 }
 

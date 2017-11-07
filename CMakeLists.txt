@@ -101,14 +101,14 @@ foreach (_ex ${aruco_executables})
     )
 endforeach ()
 
-add_executable(arm_to_world_calibration
-        src/arm_to_world_calibration/main_arm_to_world.cpp
-        src/arm_to_world_calibration/ArmToWorldCalibration.cpp
-        src/arm_to_world_calibration/ArmToWorldCalibration.h)
+# add_executable(arm_to_world_calibration
+#         src/arm_to_world_calibration/main_arm_to_world.cpp
+#         src/arm_to_world_calibration/ArmToWorldCalibration.cpp
+#         src/arm_to_world_calibration/ArmToWorldCalibration.h)
 
-target_link_libraries(arm_to_world_calibration
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES})
+# target_link_libraries(arm_to_world_calibration
+#         ${catkin_LIBRARIES}
+#         ${OpenCV_LIBRARIES})
 
 add_library(ExtrinsicCalibArucoNodelet
         src/extrinsic_calib_aruco/ExtrinsicArucoNodelet.cpp

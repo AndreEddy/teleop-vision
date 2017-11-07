@@ -236,6 +236,7 @@ TaskSteadyHand::TaskSteadyHand(
         tube_meshes[m]->GetActor()->GetProperty()->SetColor(colors.BlueDodger);
         tube_meshes[m]->GetActor()->GetProperty()->SetSpecular(1);
         tube_meshes[m]->GetActor()->GetProperty()->SetSpecularPower(100);
+        if (m==3) break;
     }
 
     // -------------------------------------------------------------------------
@@ -502,7 +503,7 @@ void TaskSteadyHand::StepWorld() {
     double grip_posit = (*gripper_position[0]);
     double theta_min=0*M_PI/180;
     double theta_max=20*M_PI/180;
-    double grip_angle = theta_max*(grip_posit)/1.55;
+    double grip_angle = theta_max*(grip_posit/2+1)/1.5;
     if(grip_angle<theta_min)
         grip_angle=theta_min;
 
@@ -511,7 +512,7 @@ void TaskSteadyHand::StepWorld() {
     //-------------------------------- UPDATE LEFT GRIPPER
     // map gripper value to an angle
     grip_posit = (*gripper_position[1]);
-    grip_angle = theta_max*(grip_posit+0.5)/1.55;
+    grip_angle = theta_max*((grip_posit)*2/1.75+0.3)/1.5;
     if(grip_angle<theta_min)
         grip_angle=theta_min;
 

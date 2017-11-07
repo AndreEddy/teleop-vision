@@ -26,10 +26,9 @@ Rendering::Rendering(bool AR_mode, uint num_windows, bool with_shaodws,
 
     render_window_[0] = vtkSmartPointer<vtkRenderWindow>::New();
     render_window_[0]->BordersOff();
+    render_window_[0]->SetPosition(window_position[0], window_position[1]);
 
-    if(num_render_windows_==1)
-        render_window_[0]->SetPosition(window_position[0], window_position[1]);
-    else if(num_render_windows_==2) {
+    if(num_render_windows_==2) {
         render_window_[1] = vtkSmartPointer<vtkRenderWindow>::New();
         render_window_[1]->SetPosition(window_position[2], window_position[3]);
         render_window_[1]->BordersOff();
@@ -156,8 +155,8 @@ Rendering::Rendering(bool AR_mode, uint num_windows, bool with_shaodws,
     if(with_shadows_)
         AddShadowPass(scene_renderer_[2]);
 
-    render_window_[0]->AddRenderer(background_renderer_[2]);
-    render_window_[0]->AddRenderer(scene_renderer_[2]);
+    // render_window_[0]->AddRenderer(background_renderer_[2]);
+    // render_window_[0]->AddRenderer(scene_renderer_[2]);
 
     //------------------------------------------------
 
@@ -176,9 +175,9 @@ Rendering::Rendering(bool AR_mode, uint num_windows, bool with_shaodws,
         }
     }
 
-    // Set render window size if one window the width is double
+    // Set render window size, if one window the width is double
     for (int j = 0; j < num_render_windows_; ++j) {
-        render_window_[j]->SetSize((4-num_render_windows_) * 640, 480);
+        render_window_[j]->SetSize((4-num_render_windows_) * 840, 1050);
     }
 
 

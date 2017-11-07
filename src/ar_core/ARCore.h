@@ -19,6 +19,7 @@
 // ros messages
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/Joy.h>
+#include <sensor_msgs/JointState.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int8.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -113,9 +114,9 @@ public:
             const geometry_msgs::PoseStamped::ConstPtr &msg);
 
     // Tool gripper callbacks
-    void Tool1GripperCurrentCallback(const std_msgs::Float32::ConstPtr &msg);
+    void Tool1GripperCurrentCallback(const sensor_msgs::JointStateConstPtr &msg);
 
-    void Tool2GripperCurrentCallback(const std_msgs::Float32::ConstPtr &msg);
+    void Tool2GripperCurrentCallback(const sensor_msgs::JointStateConstPtr &msg);
 
     // foot switch used to select the ac path
     void PedalCameraCallback(const sensor_msgs::JoyConstPtr &msg);
@@ -198,7 +199,7 @@ private:
 
     // two function pointers for slave gripper callbacks
     void (ARCore::*gripper_callbacks[2])
-            (const std_msgs::Float32::ConstPtr &msg);
+            (const sensor_msgs::JointStateConstPtr &msg);
 
 
 };
