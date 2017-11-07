@@ -1,0 +1,46 @@
+  # task_frame_to_PSM1_frame:
+  # Always needed when the slave is used and it is constant as long as the
+  # world or baswe frames of the arm are not moved.
+
+  # task_frame_to_PSM2_frame
+  # Always needed when the slave is used and it is constant as long as the
+  # world or baswe frames of the arm are not moved.
+
+  # world_frame_to_right_cam_frame:
+  # in AR used only if right cam pose is not provided online, for VR read the
+  # note bellow.
+
+  # world_frame_to_left_cam_frame:
+  # In AR used only if left cam pose is not provided online, for VR read the
+  # note bellow.
+
+  # MTMR_frame_to_image_frame and MTML_frame_to_image_frame:
+  # This is used in VR mode, where the virtual tool follows master's pose
+  # (instead of the slaves, in the AR mode). The transform is just a rotation
+  # that takes the master poses to the image frame (opencv style: x is left
+  # to right and y is top to bottom) and it is usually found by inspection.
+
+  # NOTE FOR VR USE:
+  # To set the virtual camera poses you can set the
+  # world_frame_to_left_cam_frame if you want the camera to look at world from
+  # a different angle and distance than the default one. the right cam pose
+  # will be estimated using a fixed left_cam_to_right_cam transform we have
+  # estimated from the da Vinci endoscopes.
+
+
+  world_frame_to_PSM1_frame: [0.0596406, -0.0604269, -0.0897679, 0.7501, 0.2056, 0.0938, 0.6215]
+
+  world_frame_to_PSM2_frame: [-0.117303, -0.0966783, -0.128457, 0.9699, 0.2075, -0.0962, -0.0839]
+
+  world_frame_to_left_cam_frame: [0.0493993311706, -0.00935397758138, 0.282508356094, 0.0126554399987, 0.842820009532, -0.535859821916, 0.0484615582421]
+
+#  world_frame_to_right_cam_frame: [0.0792294774569, -0.0625801545724, 0.27141894149,
+#    -0.028709680692, 0.985893665499, -0.104818263216, -0.127289301434]
+
+  PSM1_frame_to_image_frame: [0.0, 0.0, 0.0, 0.0, 0.7071, -0.7071, 0.0]
+  PSM1_DUMMY_frame_to_image_frame: [0.0, 0.0, 0.0, 0.0, 0.7071, -0.7071, 0.0]
+
+  PSM2_frame_to_image_frame: [0.0, 0.0, 0.0, 0.0, 0.7071, -0.7071, 0.0]
+  PSM2_DUMMY_frame_to_image_frame: [0.0, 0.0, 0.0, 0.0, 0.7071, -0.7071, 0.0]
+
+  sigma7/sigma0_frame_to_image_frame: [0.0, 0.0, 0.0, 0.5, 0.5, -0.5, 0.5]
